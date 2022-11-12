@@ -64,7 +64,7 @@ if(isset($_POST['register'])) {
 								</div>
 							</div>
 							<form method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>" class="signin-form">
-                                <h4><?php echo $message ?? ""; ?></h4>
+                                <h6><?php echo $message ?? ""; ?></h6>
 								<div class="form-group mt-3">
 									<input type="text" name="name" class="form-control" required>
 									<label class="form-control-placeholder" for="name">Name</label>

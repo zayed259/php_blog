@@ -1,3 +1,43 @@
+<?php
+if(session_status() === PHP_SESSION_NONE) {
+	session_start();
+}
+if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true) {
+	header('Location: index.php');
+	exit;
+}
+$message = '';
+if(isset($_POST['login'])) {
+	require_once 'assets/inc/connection.php';
+	$email = $conn->real_escape_string($_POST['email']);
+	$password = $conn->real_escape_string($_POST['password']);
+	if($email == '' || $password == '') {
+		$message = 'All fields are required';
+	} else {
+		$sql = "SELECT * FROM `users` WHERE `email` = '$email' LIMIT 1";
+		$result = $conn->query($sql);
+		if($result->num_rows > 0) {
+			$user = $result->fetch_assoc();
+			if(password_verify($password, $user['password'])) {
+				$_SESSION['logged_in'] = true;
+				$_SESSION['user_id'] = $user['id'];
+				$_SESSION['user_name'] = $user['name'];
+				$_SESSION['user_email'] = $user['email'];
+				$_SESSION['user_role'] = $user['role'];
+				if(isset($_SESSION['logged_in']) && $_SESSION['user_role'] == '1') {
+					header('Location: index.php');
+				} else {
+					header('Location: admin/admin-dashboard.php');
+				}
+			} else {
+				$message = 'Password is incorrect';
+			}
+		} else {
+			$message = 'Invalid email or password';
+		}
+	}
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -30,19 +70,19 @@
 									</p>
 								</div>
 							</div>
-
-							<form action="#" method="POST" class="signin-form">
+							<h6><?php echo $message ?? ""; ?></h6>
+							<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" class="signin-form">
 								<div class="form-group mt-3">
-									<input type="email" class="form-control" name="email" required>
+									<input type="email" class="form-control" name="email">
 									<label class="form-control-placeholder" for="username">Email</label>
 								</div>
 								<div class="form-group">
-									<input id="password-field" type="password" name="password" class="form-control" required>
+									<input id="password-field" type="password" name="password" class="form-control">
 									<label class="form-control-placeholder" for="password">Password</label>
 									<span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
 								</div>
 								<div class="form-group">
-									<button type="submit" class="form-control btn btn-primary rounded submit px-3">Login</button>
+									<button type="submit" class="form-control btn btn-primary rounded submit px-3" name="login">Login</button>
 								</div>
 								<div class="form-group d-flex">
 									<div class="w-50 text-left">
